@@ -145,6 +145,9 @@ public class OnvifDevice {
 	 * @throws SOAPException 
 	 */
 	protected void init() throws ConnectException, SOAPException {
+
+		setUTCTime(getDate());
+
 		Capabilities capabilities = getDevices().getCapabilities();
 
 		if (capabilities == null) {
@@ -252,18 +255,13 @@ public class OnvifDevice {
 		nonce = "" + generator.nextInt();
 	}
 
-	public String getLastUTCTime() {
+	public String getUTCTime() {
 		return utcTime;
 	}
 
-	public String getUTCTime() {
+	public void setUTCTime(Date date){
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-d'T'HH:mm:ss'Z'");
-		sdf.setTimeZone(new SimpleTimeZone(SimpleTimeZone.UTC_TIME, "UTC"));
-
-		Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-		String utcTime = sdf.format(cal.getTime());
-		this.utcTime = utcTime;
-		return utcTime;
+		this.utcTime = sdf.format(date);
 	}
 
 	public SOAP getSoap() {

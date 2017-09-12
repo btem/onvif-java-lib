@@ -3,6 +3,8 @@ package de.onvif.soap;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -29,6 +31,8 @@ public class SOAP {
 	private boolean logging = true;
 
 	private OnvifDevice onvifDevice;
+
+	private static Map<Class, JAXBContext> contextMap = new HashMap<>();
 
 	public SOAP(OnvifDevice onvifDevice) {
 		super();
@@ -99,7 +103,14 @@ public class SOAP {
 				throw new NullPointerException("Improper SOAP Response Element given (is null).");
 			}
 
-			Unmarshaller unmarshaller = JAXBContext.newInstance(soapResponseElem.getClass()).createUnmarshaller();
+			if(contextMap.get(soapResponseElem.getClass()) == null){
+				//Do not create same instance multi times.
+				contextMap.put(soapResponseElem.getClass(), JAXBContext.newInstance(soapResponseElem.getClass()));
+			}
+			JAXBContext context = contextMap.get(soapResponseElem.getClass());
+
+			Unmarshaller unmarshaller = context.createUnmarshaller();
+
 			try {
 				try {
 					soapResponseElem = unmarshaller.unmarshal(soapResponse.getSOAPBody().extractContentAsDocument());
@@ -186,7 +197,7 @@ public class SOAP {
 			nonceElem.setTextContent(onvifDevice.getEncryptedNonce());
 
 			SOAPElement createdElem = usernameTokenElem.addChildElement("Created", "wsu");
-			createdElem.setTextContent(onvifDevice.getLastUTCTime());
+			createdElem.setTextContent(onvifDevice.getUTCTime());
 		}
 	}
 
